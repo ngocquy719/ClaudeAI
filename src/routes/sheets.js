@@ -8,7 +8,7 @@ const multer = require('multer');
 const { requireAuth } = require('../middleware/auth');
 const {
   requireRole,
-  getSheetPermission,
+  ensureRoleLoaded,
   getSheetRow,
   canManageSharing,
   getVisibleUserIds,
@@ -33,9 +33,6 @@ function saveVersion(sheetId, content, userId) {
   ).run(sheetId, content, userId || null);
 }
 
-/**
- * POST /api/sheets - Create sheet. Leader or Admin only.
- */
 router.post('/', requireRole(['admin', 'leader']), (req, res) => {
   const name = (req.body.name || 'Untitled').trim() || 'Untitled';
   const userId = req.user.userId;
@@ -43,11 +40,8 @@ router.post('/', requireRole(['admin', 'leader']), (req, res) => {
     const stmt = db.prepare('INSERT INTO sheets (user_id, name, content) VALUES (?, ?, ?)');
     const result = stmt.run(userId, name, defaultContent);
     const sheetId = result.lastInsertRowid;
-    db.prepare(
-      'INSERT INTO sheet_permissions (sheet_id, user_id, permission) VALUES (?, ?, ?)'
-    ).run(sheetId, userId, 'owner');
     const row = db.prepare(
-      'SELECT id, name, created_at, updated_at FROM sheets WHERE id = ?'
+      'SELECT id, name, created_at, updated_at, user_id FROM sheets WHERE id = ?'
     ).get(sheetId);
     res.status(201).json(row);
   } catch (err) {
@@ -55,22 +49,39 @@ router.post('/', requireRole(['admin', 'leader']), (req, res) => {
   }
 });
 
-/**
- * GET /api/sheets - List sheets (owned or shared with me). can_delete: chỉ owner hoặc admin chính.
- */
 router.get('/', (req, res) => {
+  ensureRoleLoaded(req);
   const userId = req.user.userId;
+  const role = req.user.role;
   const rootAdmin = isRootAdmin(userId);
-  const rows = db.prepare(`
-    SELECT s.id, s.name, s.created_at, s.updated_at, s.user_id AS owner_id,
-           COALESCE(p.permission, 'owner') AS my_permission
-    FROM sheets s
-    LEFT JOIN sheet_permissions p ON p.sheet_id = s.id AND p.user_id = ?
-    WHERE s.user_id = ? OR p.user_id IS NOT NULL
-    ORDER BY s.updated_at DESC
-  `).all(userId, userId);
+  let rows;
+  if (role === 'admin') {
+    rows = db.prepare(`
+      SELECT s.id, s.name, s.created_at, s.updated_at, s.user_id AS owner_id,
+             CASE WHEN s.user_id = ? THEN 'owner' ELSE COALESCE(p.permission, 'viewer') END AS my_permission
+      FROM sheets s
+      LEFT JOIN sheet_permissions p ON p.sheet_id = s.id AND p.user_id = ?
+      ORDER BY s.updated_at DESC
+    `).all(userId, userId);
+  } else if (role === 'leader') {
+    rows = db.prepare(`
+      SELECT s.id, s.name, s.created_at, s.updated_at, s.user_id AS owner_id, 'owner' AS my_permission
+      FROM sheets s
+      WHERE s.user_id = ?
+      ORDER BY s.updated_at DESC
+    `).all(userId);
+  } else {
+    rows = db.prepare(`
+      SELECT s.id, s.name, s.created_at, s.updated_at, s.user_id AS owner_id, p.permission AS my_permission
+      FROM sheets s
+      INNER JOIN sheet_permissions p ON p.sheet_id = s.id AND p.user_id = ?
+      WHERE p.permission IN ('editor', 'viewer')
+      ORDER BY s.updated_at DESC
+    `).all(userId);
+  }
   const withDelete = rows.map((r) => ({
     ...r,
+    my_permission: r.my_permission === 'edit' ? 'editor' : r.my_permission === 'view' ? 'viewer' : r.my_permission,
     can_delete: r.owner_id === userId || rootAdmin,
   }));
   res.json(withDelete);
@@ -79,8 +90,9 @@ router.get('/', (req, res) => {
 /**
  * GET /api/sheets/:id - Load sheet. View permission. Returns content + myPermission.
  */
-router.get('/:id', requireSheetPermission('view'), (req, res) => {
+router.get('/:id', requireSheetPermission('viewer'), (req, res) => {
   const row = req.sheet;
+  const canManage = canManageSharing(row.id, req.user.userId, req.user.role);
   res.json({
     id: row.id,
     name: row.name,
@@ -88,13 +100,14 @@ router.get('/:id', requireSheetPermission('view'), (req, res) => {
     created_at: row.created_at,
     updated_at: row.updated_at,
     myPermission: req.sheetPermission,
+    canManageShare: canManage,
   });
 });
 
 /**
  * PUT /api/sheets/:id - Save. Edit or owner. Creates version snapshot on content change.
  */
-router.put('/:id', requireSheetPermission('edit'), (req, res) => {
+router.put('/:id', requireSheetPermission('editor'), (req, res) => {
   const id = req.sheet.id;
   const updates = [];
   const params = [];
@@ -117,11 +130,6 @@ router.put('/:id', requireSheetPermission('edit'), (req, res) => {
   params.push(id);
   if (updates.length <= 1) return res.json({ ok: true });
   db.prepare(`UPDATE sheets SET ${updates.join(', ')} WHERE id = ?`).run(...params);
-  const io = req.app.locals.io;
-  if (io && req.body.content !== undefined) {
-    const content = typeof req.body.content === 'string' ? req.body.content : JSON.stringify(req.body.content);
-    io.to('sheet:' + id).emit('sheet:content', { content: req.body.content });
-  }
   res.json({ ok: true });
 });
 
@@ -129,7 +137,7 @@ router.put('/:id', requireSheetPermission('edit'), (req, res) => {
  * DELETE /api/sheets/:id - Chỉ chủ sở hữu sheet hoặc admin chính mới xóa được.
  * User do leader tạo không thể xóa sheet của cấp cao hơn.
  */
-router.delete('/:id', requireSheetPermission('view'), (req, res) => {
+router.delete('/:id', requireSheetPermission('viewer'), (req, res) => {
   const sheet = req.sheet;
   const userId = req.user.userId;
   const canDelete = sheet.user_id === userId || isRootAdmin(userId);
@@ -145,7 +153,7 @@ router.delete('/:id', requireSheetPermission('view'), (req, res) => {
 /**
  * GET /api/sheets/:id/permissions - List who has access. Owner or Admin only.
  */
-router.get('/:id/permissions', requireSheetPermission('view'), (req, res) => {
+router.get('/:id/permissions', requireSheetPermission('viewer'), (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (!canManageSharing(id, req.user.userId, req.user.role)) {
     return res.status(403).json({ error: 'Only owner or admin can view permissions' });
@@ -156,7 +164,7 @@ router.get('/:id/permissions', requireSheetPermission('view'), (req, res) => {
     SELECT p.user_id, p.permission, u.username
     FROM sheet_permissions p
     JOIN users u ON u.id = p.user_id
-    WHERE p.sheet_id = ? AND p.permission != 'owner'
+    WHERE p.sheet_id = ?
     ORDER BY u.username
   `).all(id);
   res.json({
@@ -168,7 +176,7 @@ router.get('/:id/permissions', requireSheetPermission('view'), (req, res) => {
 /**
  * PUT /api/sheets/:id/share - Set sharing. Body: { shares: [ { userId, permission: 'view'|'edit' } ] }. Owner or Admin only.
  */
-router.put('/:id/share', requireSheetPermission('view'), (req, res) => {
+router.put('/:id/share', requireSheetPermission('viewer'), (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (!canManageSharing(id, req.user.userId, req.user.role)) {
     return res.status(403).json({ error: 'Only owner or admin can manage sharing' });
@@ -184,13 +192,13 @@ router.put('/:id/share', requireSheetPermission('view'), (req, res) => {
       return res.status(403).json({ error: 'Leader can only share with users they created' });
     }
   }
-  db.prepare('DELETE FROM sheet_permissions WHERE sheet_id = ? AND user_id != ?').run(id, ownerId);
+  db.prepare('DELETE FROM sheet_permissions WHERE sheet_id = ?').run(id);
   const insert = db.prepare(
-    'INSERT OR REPLACE INTO sheet_permissions (sheet_id, user_id, permission) VALUES (?, ?, ?)'
+    'INSERT INTO sheet_permissions (sheet_id, user_id, permission) VALUES (?, ?, ?)'
   );
   for (const s of shares) {
     const uid = parseInt(s.userId, 10);
-    const perm = s.permission === 'edit' ? 'edit' : 'view';
+    const perm = s.permission === 'editor' ? 'editor' : 'viewer';
     if (Number.isNaN(uid) || uid === ownerId) continue;
     if (req.user.role === 'leader' && !visibleIds.includes(uid)) continue;
     insert.run(id, uid, perm);
@@ -201,7 +209,7 @@ router.put('/:id/share', requireSheetPermission('view'), (req, res) => {
 /**
  * GET /api/sheets/:id/versions - List version history. View permission.
  */
-router.get('/:id/versions', requireSheetPermission('view'), (req, res) => {
+router.get('/:id/versions', requireSheetPermission('viewer'), (req, res) => {
   const id = req.sheet.id;
   const rows = db.prepare(`
     SELECT v.id, v.sheet_id, v.created_at, v.created_by, u.username AS created_by_username
@@ -217,7 +225,7 @@ router.get('/:id/versions', requireSheetPermission('view'), (req, res) => {
 /**
  * POST /api/sheets/:id/versions/:versionId/restore - Restore a version. Edit or owner.
  */
-router.post('/:id/versions/:versionId/restore', requireSheetPermission('edit'), (req, res) => {
+router.post('/:id/versions/:versionId/restore', requireSheetPermission('editor'), (req, res) => {
   const sheetId = req.sheet.id;
   const versionId = parseInt(req.params.versionId, 10);
   if (Number.isNaN(versionId)) return res.status(400).json({ error: 'Invalid version id' });
@@ -230,7 +238,7 @@ router.post('/:id/versions/:versionId/restore', requireSheetPermission('edit'), 
 /**
  * POST /api/sheets/:id/import-excel
  */
-router.post('/:id/import-excel', upload.single('file'), requireSheetPermission('edit'), async (req, res) => {
+router.post('/:id/import-excel', upload.single('file'), requireSheetPermission('editor'), async (req, res) => {
   const id = req.sheet.id;
   if (!req.file || !req.file.buffer) return res.status(400).json({ error: 'No file uploaded' });
   try {
@@ -247,7 +255,7 @@ router.post('/:id/import-excel', upload.single('file'), requireSheetPermission('
 /**
  * GET /api/sheets/:id/export-excel
  */
-router.get('/:id/export-excel', requireSheetPermission('view'), async (req, res) => {
+router.get('/:id/export-excel', requireSheetPermission('viewer'), async (req, res) => {
   const row = req.sheet;
   try {
     const buffer = await exportLuckysheetJsonToExcelBuffer(row.content, row.name);

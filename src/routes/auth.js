@@ -22,13 +22,13 @@ const SALT_ROUNDS = 10;
  */
 router.post('/bootstrap', (req, res) => {
   const rawSecret = process.env.BOOTSTRAP_SECRET;
-  const envSecret = rawSecret ? String(rawSecret).trim() : '';
-  const bodySecret = req.body.secret != null ? String(req.body.secret).trim() : '';
+  const envSecret = rawSecret ? String(rawSecret).replace(/\s+/g, ' ').trim() : '';
+  const bodySecret = req.body && req.body.secret != null ? String(req.body.secret).replace(/\s+/g, ' ').trim() : '';
   if (!envSecret) {
-    return res.status(503).json({ error: 'Bootstrap not configured. Set BOOTSTRAP_SECRET in .env' });
+    return res.status(503).json({ error: 'Bootstrap not configured. Set BOOTSTRAP_SECRET in environment.' });
   }
   if (bodySecret !== envSecret) {
-    return res.status(403).json({ error: 'Invalid bootstrap secret. Check BOOTSTRAP_SECRET in .env' });
+    return res.status(403).json({ error: 'Invalid bootstrap secret.' });
   }
 
   const count = db.prepare('SELECT COUNT(*) AS n FROM users').get();
@@ -82,7 +82,7 @@ router.post('/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
 
-  const role = row.role || 'editor';
+  const role = row.role || 'user';
   const token = jwt.sign(
     { userId: row.id, username: row.username, role },
     JWT_SECRET,

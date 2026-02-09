@@ -1,9 +1,3 @@
-/**
- * User management. No public registration.
- * Admin: create Admin/Leader/Editor/Viewer; see all users.
- * Leader: create Editor/Viewer only; see only users they created.
- */
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { requireAuth } = require('../middleware/auth');
@@ -15,24 +9,11 @@ router.use(requireAuth);
 
 const SALT_ROUNDS = 10;
 
-const ROLE_ORDER = { admin: 4, leader: 3, editor: 2, viewer: 1 };
-
-/** Leader may only create roles strictly below their own. */
-function leaderCanCreateRole(creatorRole, newRole) {
-  if (creatorRole !== 'leader') return false;
-  return newRole === 'editor' || newRole === 'viewer';
-}
-
-/**
- * POST /api/users
- * Body: { username, password, role }
- * Admin: role in [admin, leader, editor, viewer]. Leader: role in [editor, viewer].
- */
 router.post('/', (req, res) => {
   ensureRoleLoaded(req);
   const role = req.user.role;
   if (role !== 'admin' && role !== 'leader') {
-    return res.status(403).json({ error: 'Only Admin or Leader can create users' });
+    return res.status(403).json({ error: 'Only admin or leader can create users' });
   }
 
   const { username, password, role: newRole } = req.body;
@@ -42,13 +23,13 @@ router.post('/', (req, res) => {
   if (username.length < 2) return res.status(400).json({ error: 'Username at least 2 characters' });
   if (password.length < 6) return res.status(400).json({ error: 'Password at least 6 characters' });
 
-  const allowedRoles = ['admin', 'leader', 'editor', 'viewer'];
-  const roleToSet = allowedRoles.includes(newRole) ? newRole : 'editor';
-
-  if (role === 'leader') {
-    if (!leaderCanCreateRole(role, roleToSet)) {
-      return res.status(403).json({ error: 'Leader can only create Editor or Viewer' });
-    }
+  let roleToSet = 'user';
+  if (role === 'admin' && (newRole === 'leader' || newRole === 'user')) {
+    roleToSet = newRole;
+  } else if (role === 'leader' && newRole === 'user') {
+    roleToSet = 'user';
+  } else if (role === 'admin' && newRole === 'admin') {
+    return res.status(403).json({ error: 'Only bootstrap can create admin' });
   }
 
   const passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
@@ -70,16 +51,11 @@ router.post('/', (req, res) => {
   }
 });
 
-/**
- * GET /api/users
- * Admin: all users. Leader: only users they created. Editor/Viewer: 403.
- * Returns: [ { id, username, role, created_by, created_at } ]
- */
 router.get('/', (req, res) => {
   ensureRoleLoaded(req);
   const role = req.user.role;
   if (role !== 'admin' && role !== 'leader') {
-    return res.status(403).json({ error: 'Only Admin or Leader can list users' });
+    return res.status(403).json({ error: 'Only admin or leader can list users' });
   }
 
   let rows;
@@ -123,7 +99,7 @@ router.patch('/:id', (req, res) => {
     return res.status(403).json({ error: 'Cannot change root admin role' });
   }
   const newRole = req.body.role;
-  const allowed = ['admin', 'leader', 'editor', 'viewer'];
+  const allowed = ['admin', 'leader', 'user'];
   if (!allowed.includes(newRole)) return res.status(400).json({ error: 'Invalid role' });
   db.prepare('UPDATE users SET role = ? WHERE id = ?').run(newRole, targetId);
   res.json({ ok: true, role: newRole });

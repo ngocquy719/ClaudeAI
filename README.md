@@ -123,13 +123,13 @@ npm run dev
 
 - **Version history:** Click **Version history**. Lists snapshots (date, user). **Restore** loads that version into the sheet. Snapshots are created on each save and on import.
 
-- **Realtime:** Socket.IO at path `/socket.io`. Client connects with JWT in `auth.token`. Emits **join** with `sheetId` to join room; receives **sheet:content** when another user saves (or server broadcasts after PUT save). Sheet editor reinitializes Luckysheet with the new content on **sheet:content**. Clients can emit **sheet:update** with `{ sheetId, content }` to save and broadcast (requires edit/owner).
+- **Realtime:** Socket.IO at path `/socket.io`. Client connects with JWT in `auth.token`. Emits **join** with `sheetId`; receives **yjs-init** (full state) and **yjs-update** (CRDT deltas). Cell-level sync via Yjs; no polling, no full-sheet reload.
 
 ## Sheets (Google Sheets–like)
 
 - **UI:** [Luckysheet](https://github.com/dream-num/Luckysheet) (open-source), served from the same Express app.
 - **Storage:** One row per sheet in SQLite; `content` is a JSON snapshot of the workbook (array of sheet configs).
-- **Auto-save:** Every 15 seconds while editing.
+- **Auto-save:** Realtime sync via Yjs + Socket.IO (no periodic save; persist to DB is debounced on server after edits).
 - **Excel:** Import (.xlsx) via “Import .xlsx”; export via “Export .xlsx” (server uses luckyexcel + ExcelJS).
 
 ### Sheets API (all require `Authorization: Bearer <token>`)

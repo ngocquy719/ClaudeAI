@@ -17,14 +17,14 @@
     messageEl.hidden = false;
   }
 
-  let userRole = 'editor';
+  let userRole = 'user';
   async function loadUser() {
     try {
       const res = await fetch('/api/me', { headers: auth.authHeaders() });
       if (res.ok) {
         const data = await res.json();
         usernameEl.textContent = data.user?.username ?? 'User';
-        userRole = data.user?.role || 'editor';
+        userRole = data.user?.role || 'user';
         const canCreate = userRole === 'admin' || userRole === 'leader';
         var toolbar = document.querySelector('.sheets-toolbar');
         if (toolbar) toolbar.style.display = canCreate ? '' : 'none';

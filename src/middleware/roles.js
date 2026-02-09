@@ -5,8 +5,8 @@
 
 const { db } = require('../config/database');
 
-const ROLE_ORDER = { admin: 4, leader: 3, editor: 2, viewer: 1 };
-const PERM_ORDER = { owner: 3, edit: 2, view: 1 };
+const ROLE_ORDER = { admin: 3, leader: 2, user: 1 };
+const PERM_ORDER = { owner: 3, editor: 2, viewer: 1 };
 
 function hasRole(userRole, requiredRoles) {
   if (!userRole || !requiredRoles || !requiredRoles.length) return false;
@@ -19,7 +19,7 @@ function hasRole(userRole, requiredRoles) {
 function ensureRoleLoaded(req) {
   if (req.user && req.user.userId && req.user.role == null) {
     const u = db.prepare('SELECT role FROM users WHERE id = ?').get(req.user.userId);
-    req.user.role = u ? u.role : 'editor';
+    req.user.role = u ? u.role : 'user';
   }
 }
 
@@ -42,7 +42,10 @@ function getSheetPermission(sheetId, userId) {
   const row = db.prepare(
     'SELECT permission FROM sheet_permissions WHERE sheet_id = ? AND user_id = ?'
   ).get(sheetId, userId);
-  return row ? row.permission : null;
+  const p = row ? row.permission : null;
+  if (p === 'edit') return 'editor';
+  if (p === 'view') return 'viewer';
+  return p;
 }
 
 function getSheetRow(sheetId) {
@@ -62,7 +65,7 @@ function canManageSharing(sheetId, userId, userRole) {
   return perm === 'owner';
 }
 
-/** Admin: all user ids. Leader: only users they created. Editor/Viewer: empty. */
+/** Admin: all user ids. Leader: only users they created. User: empty. */
 function getVisibleUserIds(req) {
   ensureRoleLoaded(req);
   const role = req.user && req.user.role;

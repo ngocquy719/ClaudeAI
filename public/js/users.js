@@ -42,9 +42,9 @@
           return;
         }
         if (me.role === 'admin') {
-          newRole.innerHTML = '<option value="admin">Admin</option><option value="leader">Leader</option><option value="editor">Editor</option><option value="viewer">Viewer</option>';
+          newRole.innerHTML = '<option value="leader">Leader</option><option value="user">User</option>';
         } else {
-          newRole.innerHTML = '<option value="editor">Editor</option><option value="viewer">Viewer</option>';
+          newRole.innerHTML = '<option value="user">User</option>';
         }
       }
     } catch (_) {}
@@ -79,16 +79,16 @@
         usersList.innerHTML = '<tr><td colspan="4" style="color:#666;">Chưa có user (Leader chỉ thấy user do mình tạo).</td></tr>';
         return;
       }
-      const roles = ['admin', 'leader', 'editor', 'viewer'];
+      const roles = ['admin', 'leader', 'user'];
       list.forEach(function (u) {
         const tr = document.createElement('tr');
-        const roleLabel = { admin: 'Admin', leader: 'Leader', editor: 'Editor', viewer: 'Viewer' }[u.role] || u.role;
+        const roleLabel = { admin: 'Admin', leader: 'Leader', user: 'User' }[u.role] || u.role;
         const badge = u.is_root_admin ? ' <span class="badge badge-root">Admin chính</span>' : '';
         const by = u.created_by_username ? escapeHtml(u.created_by_username) : '–';
         let actions = '';
         if (canChangeRole(u)) {
           const opts = roles.map(function (r) {
-            const label = { admin: 'Admin', leader: 'Leader', editor: 'Editor', viewer: 'Viewer' }[r];
+            const label = { admin: 'Admin', leader: 'Leader', user: 'User' }[r];
             return '<option value="' + r + '"' + (u.role === r ? ' selected' : '') + '>' + label + '</option>';
           }).join('');
           actions += '<select class="role-select" data-user-id="' + u.id + '">' + opts + '</select> ';

@@ -21,8 +21,8 @@ if (!fs.existsSync(dirToCreate)) {
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 
-const ROLES = ['admin', 'leader', 'editor', 'viewer'];
-const SHEET_PERMISSIONS = ['owner', 'edit', 'view'];
+const ROLES = ['admin', 'leader', 'user'];
+const SHEET_PERMISSIONS = ['owner', 'editor', 'viewer'];
 
 function initDatabase() {
   db.exec(`
@@ -30,7 +30,7 @@ function initDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'editor',
+      role TEXT NOT NULL DEFAULT 'user',
       created_by INTEGER,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (created_by) REFERENCES users(id)
@@ -76,11 +76,11 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_sheet_versions_sheet ON sheet_versions(sheet_id);
   `);
   try {
-    db.exec(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'editor'`);
-    db.exec(`UPDATE users SET role = 'editor' WHERE role IS NULL`);
+    db.exec(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`);
   } catch (e) {
     if (!e.message.includes('duplicate column')) throw e;
   }
+  db.exec(`UPDATE users SET role = 'user' WHERE role IN ('editor', 'viewer') OR role IS NULL`);
   try {
     db.exec(`ALTER TABLE users ADD COLUMN created_by INTEGER REFERENCES users(id)`);
   } catch (e) {
@@ -91,6 +91,8 @@ function initDatabase() {
   } catch (e) {
     if (!e.message.includes('duplicate') && !e.message.includes('already exists')) throw e;
   }
+  db.exec(`UPDATE sheet_permissions SET permission = 'editor' WHERE permission = 'edit'`);
+  db.exec(`UPDATE sheet_permissions SET permission = 'viewer' WHERE permission = 'view'`);
   return db;
 }
 

@@ -6,6 +6,7 @@
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
 const { ensureRoleLoaded, isRootAdmin } = require('../middleware/roles');
+const pkg = require('../../package.json');
 
 const router = express.Router();
 
@@ -29,6 +30,19 @@ router.get('/dashboard', (req, res) => {
   res.json({
     message: `Hello, ${req.user.username}. This is your private dashboard.`,
     time: new Date().toISOString(),
+  });
+});
+
+/**
+ * GET /api/version
+ * Exposes backend version info so the UI can show which build is running.
+ */
+router.get('/version', (req, res) => {
+  const version = pkg.version || '0.0.0';
+  const build = process.env.BUILD_ID || process.env.RENDER_GIT_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || null;
+  res.json({
+    version,
+    build,
   });
 });
 

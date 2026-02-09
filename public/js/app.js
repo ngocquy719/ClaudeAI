@@ -9,6 +9,7 @@
   const usernameEl = document.getElementById('username');
   const dashboardEl = document.getElementById('dashboardMessage');
   const logoutBtn = document.getElementById('logoutBtn');
+  const versionEl = document.getElementById('versionInfo');
 
   async function loadDashboard() {
     try {
@@ -33,6 +34,25 @@
     }
   }
 
+  async function loadVersion() {
+    if (!versionEl) return;
+    try {
+      const res = await fetch('/api/version', {
+        headers: auth.authHeaders(),
+      });
+      if (!res.ok) return;
+      const data = await res.json().catch(() => ({}));
+      if (!data) return;
+      const version = data.version || '0.0.0';
+      const build = data.build;
+      let text = `Version: ${version}`;
+      if (build) text += ` (${String(build).slice(0, 7)})`;
+      versionEl.textContent = text;
+    } catch (_) {
+      // Silent fail; version info is optional
+    }
+  }
+
   // Get username and role from /api/me for header
   async function loadUser() {
     try {
@@ -49,6 +69,7 @@
 
   loadUser();
   loadDashboard();
+  loadVersion();
 
   logoutBtn.addEventListener('click', () => {
     auth.clearToken();
