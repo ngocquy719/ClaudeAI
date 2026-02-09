@@ -1,0 +1,419 @@
+/* Simple, clean styles for the private app */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  background: #f5f5f5;
+}
+
+/* ----- Login page ----- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.login-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  max-width: 360px;
+  width: 100%;
+}
+
+.login-box h1 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.5rem;
+}
+
+.login-box .subtitle {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.login-box form {
+  margin-bottom: 1.5rem;
+}
+
+.login-box h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.login-box label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  color: #555;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.login-box input:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.login-box button:hover {
+  background: #555;
+}
+
+.login-box hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 1.5rem 0;
+}
+
+.login-box .bootstrap-section .hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+.message {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.message.error {
+  background: #fee;
+  color: #c00;
+}
+
+.message.success {
+  background: #efe;
+  color: #060;
+}
+
+/* ----- App (after login) ----- */
+.app-header {
+  background: #333;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-header .user {
+  font-size: 0.95rem;
+}
+
+.app-header #logoutBtn {
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.app-header #logoutBtn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.app-main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.app-main h1 {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+}
+
+.app-main .hint {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
+.app-main .link {
+  color: #333;
+  text-decoration: underline;
+}
+
+.app-main .link:hover {
+  color: #666;
+}
+
+/* ----- Sheets list ----- */
+.sheets-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.sheets-toolbar input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  width: 200px;
+}
+
+.sheets-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sheets-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  background: #fff;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.sheets-list a {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sheets-list a:hover {
+  text-decoration: underline;
+}
+
+.sheets-list .meta {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 0.5rem;
+}
+
+/* ----- Sheet editor ----- */
+.sheet-editor-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+}
+
+.sheet-editor-header .title {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.sheet-editor-header button,
+.sheet-editor-header a.btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  color: #333;
+  display: inline-block;
+}
+
+.sheet-editor-header button:hover,
+.sheet-editor-header a.btn:hover {
+  background: #f0f0f0;
+}
+
+.sheet-editor-header input[type="file"] {
+  font-size: 0.85rem;
+}
+
+#luckysheet-container {
+  margin: 0;
+  padding: 0;
+  height: calc(100vh - 50px);
+  width: 100%;
+}
+
+/* ----- Modals (share, version history) ----- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.25rem;
+  max-width: 480px;
+  width: 90%;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.modal-box h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.permission-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.permission-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.permission-list .share-remove {
+  margin-left: auto;
+}
+
+.version-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.version-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.version-list .version-meta {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* ----- Users table & permissions ----- */
+.users-table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.users-table th,
+.users-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.users-table td.actions {
+  white-space: nowrap;
+}
+
+.users-table .role-select {
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.badge-root {
+  background: #e8f4fd;
+  color: #0d6efd;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: #fff;
+  border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+  background: #bb2d3b;
+  border-color: #bb2d3b;
+  color: #fff;
+}
+
+.permission-info {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}

@@ -1,0 +1,22 @@
+# Render Blueprint: one Web Service (Node.js + Socket.IO)
+# Deploy: connect this repo in Render Dashboard and use "Apply" for the blueprint,
+# or create a Web Service manually with the same settings.
+
+services:
+  - type: web
+    name: private-web
+    runtime: node
+    region: oregon
+
+    buildCommand: npm install
+    startCommand: npm start
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BOOTSTRAP_SECRET
+        generateValue: true
+
+    # Free tier: instance spins down after 15 min inactivity; disk is ephemeral.

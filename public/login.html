@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login – Private App</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+  <main class="login-box">
+    <h1>Private App</h1>
+    <p class="subtitle">Sign in</p>
+
+    <div id="message" class="message" role="alert" hidden></div>
+
+    <form id="loginForm">
+      <h2>Login</h2>
+      <label for="login-username">Username</label>
+      <input type="text" id="login-username" name="username" required autocomplete="username">
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" name="password" required autocomplete="current-password">
+      <button type="submit">Log in</button>
+    </form>
+
+    <p style="margin-top:1rem;"><a href="#" id="showBootstrap">First-time setup (create first admin)</a></p>
+    <div id="bootstrapSection" class="bootstrap-section" hidden>
+      <hr>
+      <form id="bootstrapForm">
+        <h2>Create first admin</h2>
+        <p class="hint">Set BOOTSTRAP_SECRET in .env and enter it below.</p>
+        <label for="boot-secret">Bootstrap secret</label>
+        <input type="password" id="boot-secret" name="secret" placeholder="From BOOTSTRAP_SECRET">
+        <label for="boot-username">Username</label>
+        <input type="text" id="boot-username" name="username" minlength="2">
+        <label for="boot-password">Password</label>
+        <input type="password" id="boot-password" name="password" minlength="6">
+        <button type="submit">Create first admin</button>
+      </form>
+    </div>
+  </main>
+  <script src="/js/auth.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

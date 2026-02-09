@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users – Private App</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <span class="user">Hello, <span id="username">...</span></span>
+    <a href="/" class="btn" style="color:#fff;border-color:#fff;text-decoration:none;">Dashboard</a>
+    <a href="/sheets.html" class="btn" style="color:#fff;border-color:#fff;text-decoration:none;">Sheets</a>
+    <button type="button" id="logoutBtn">Log out</button>
+  </header>
+  <main class="app-main">
+    <h1>Quản lý user</h1>
+    <p class="hint">Admin và Leader có thể tạo user. Admin tổng có thể tạo Admin sub, Leader, Editor, Viewer. Leader chỉ tạo Editor/Viewer.</p>
+
+    <section class="permission-info" id="permissionSection">
+      <h2 style="font-size:1rem;margin:0 0 0.5rem 0;">Phân quyền</h2>
+      <ul style="font-size:0.9rem;color:#555;margin:0 0 1rem 0;padding-left:1.2rem;">
+        <li><strong>Admin chính</strong> (tạo bằng bootstrap): không ai xóa hay đổi role được.</li>
+        <li>Admin tổng có thể tạo: Admin sub, Leader, Editor, Viewer.</li>
+        <li>Leader chỉ tạo được: Editor, Viewer.</li>
+        <li>Chỉ chủ sở hữu sheet hoặc admin chính mới xóa được sheet; user do leader tạo không xóa file của cấp cao hơn.</li>
+      </ul>
+    </section>
+
+    <div class="sheets-toolbar" id="createUserSection">
+      <h2 style="font-size:1rem;margin:0 0 0.5rem 0;">Tạo user mới</h2>
+      <input type="text" id="newUsername" placeholder="Username" style="width:160px;">
+      <input type="password" id="newPassword" placeholder="Password" style="width:140px;">
+      <select id="newRole">
+        <option value="editor">Editor</option>
+        <option value="viewer">Viewer</option>
+      </select>
+      <button type="button" id="createUserBtn">Tạo user</button>
+    </div>
+
+    <p id="userMessage" class="message" hidden></p>
+    <div class="users-table-wrap">
+      <table class="users-table" id="usersTable">
+        <thead>
+          <tr><th>Username</th><th>Vai trò</th><th>Tạo bởi</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody id="usersList"></tbody>
+      </table>
+    </div>
+  </main>
+  <script src="/js/auth.js"></script>
+  <script src="/js/users.js"></script>
+</body>
+</html>

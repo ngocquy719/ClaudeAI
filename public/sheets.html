@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheets – Private App</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <span class="user">Hello, <span id="username">...</span></span>
+    <a href="/" class="btn" style="color:#fff;border-color:#fff;text-decoration:none;">Dashboard</a>
+    <a href="/users.html" class="btn" style="color:#fff;border-color:#fff;text-decoration:none;">Users</a>
+    <button type="button" id="logoutBtn">Log out</button>
+  </header>
+  <main class="app-main">
+    <h1>Sheets</h1>
+    <div class="sheets-toolbar">
+      <input type="text" id="newSheetName" placeholder="New sheet name" value="Untitled">
+      <button type="button" id="createBtn">Create new sheet</button>
+    </div>
+    <p id="message" class="message" hidden></p>
+    <ul id="sheetsList" class="sheets-list"></ul>
+  </main>
+  <script src="/js/auth.js"></script>
+  <script src="/js/sheets.js"></script>
+</body>
+</html>

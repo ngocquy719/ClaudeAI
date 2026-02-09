@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private App</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <span class="user">Hello, <span id="username">...</span></span>
+    <a href="/users.html" id="usersLink" class="btn" style="display:none;color:#fff;border-color:#fff;text-decoration:none;">Users</a>
+    <a href="/sheets.html" class="btn" style="color:#fff;border-color:#fff;text-decoration:none;">Sheets</a>
+    <button type="button" id="logoutBtn">Log out</button>
+  </header>
+  <main class="app-main">
+    <h1>Dashboard</h1>
+    <p id="dashboardMessage">Loading...</p>
+    <p class="hint">This page is only visible after login.</p>
+    <p><a href="/sheets.html" class="link">Open Sheets</a> — Spreadsheets (create, edit, share, version history, realtime).</p>
+  </main>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

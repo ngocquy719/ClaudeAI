@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheet – Private App</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/luckysheet@2.1.13/dist/plugins/css/pluginsCss.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/luckysheet@2.1.13/dist/css/luckysheet.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/luckysheet@2.1.13/dist/assets/iconfont/iconfont.css">
+</head>
+<body>
+  <header class="sheet-editor-header">
+    <a href="/sheets.html" class="btn">← Back to Sheets</a>
+    <span class="title" id="sheetTitle">Sheet</span>
+    <span id="myPermissionBadge" style="font-size:0.75rem;color:#666;"></span>
+    <button type="button" id="shareBtn">Share</button>
+    <button type="button" id="historyBtn">Version history</button>
+    <button type="button" id="exportExcelBtn">Export .xlsx</button>
+    <label class="btn" style="margin:0;">
+      Import .xlsx
+      <input type="file" id="importExcelInput" accept=".xlsx" style="position:absolute;width:0.1px;height:0.1px;opacity:0;">
+    </label>
+    <span id="saveStatus" style="font-size:0.85rem;color:#666;"></span>
+  </header>
+  <div id="luckysheet-container"></div>
+
+  <div id="shareModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3>Share sheet</h3>
+      <p id="shareHelp" style="font-size:0.9rem;color:#666;">Add people (view or edit). Only owner or admin can change sharing.</p>
+      <ul id="shareList" class="permission-list"></ul>
+      <div>
+        <label>Add user:</label>
+        <select id="shareUserSelect"><option value="">-- Choose user --</option></select>
+        <select id="sharePermSelect"><option value="view">Viewer</option><option value="edit">Editor</option></select>
+        <button type="button" id="shareAddBtn">Add</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="shareCloseBtn" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="historyModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3>Version history</h3>
+      <ul id="versionList" class="version-list"></ul>
+      <div class="modal-actions">
+        <button type="button" id="historyCloseBtn" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet@2.1.13/dist/plugins/js/plugin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luckysheet@2.1.13/dist/luckysheet.umd.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/sheet.js"></script>
+</body>
+</html>
